@@ -13,44 +13,59 @@ def index(request):
     plan_two_id = 'executive'
     
     # Create a product 
-    outpost_product = stripe.Product.create(
-      name="OUTPOST TEST",
-      type="service",
-      id="outpost_test"
-    )
-      
-    print("PRODUCT CREATED...")
-    print(outpost_product)
-      
-    # create a basic plan under outpost product
-    basic_plan = stripe.Plan.create(
-      currency='usd',
-      interval='month',
-      product=outpost_product.id,
-      nickname='Basic Plan',
-      id='basic',
-      amount=799,
-    )
-      
-    print("RECURRING PLAN CREATED (BASIC PLAN)...") 
-    print(basic_plan)
-      
-    # create an executive plan under outpost product 
-    executive_plan = stripe.Plan.create(
-      currency='usd',
-      interval='month',
-      product=outpost_product["id"],
-      nickname='Executive Plan',
-      id='executive',
-      amount=1199,
-    )
-      
-    print("RECURRING PLAN CREATED (EXECUTIVE PLAN)...")  
-    print(executive_plan)
+#     outpost_product = stripe.Product.create(
+#       name="OUTPOST TEST",
+#       type="service",
+#       id="outpost_test"
+#     )
+#       
+#     print("PRODUCT CREATED...")
+#     print(outpost_product)
+#       
+#     # create a basic plan under outpost product
+#     basic_plan = stripe.Plan.create(
+#       currency='usd',
+#       interval='month',
+#       product=outpost_product.id,
+#       nickname='Basic Plan',
+#       id='basic',
+#       amount=799,
+#     )
+#       
+#     print("RECURRING PLAN CREATED (BASIC PLAN)...") 
+#     print(basic_plan)
+#       
+#     # create an executive plan under outpost product 
+#     executive_plan = stripe.Plan.create(
+#       currency='usd',
+#       interval='month',
+#       product=outpost_product["id"],
+#       nickname='Executive Plan',
+#       id='executive',
+#       amount=1199,
+#     )
+#       
+#     print("RECURRING PLAN CREATED (EXECUTIVE PLAN)...")  
+#     print(executive_plan)
 
 
     # creates a payment method
-    payment_method_response = stripe.PaymentMethod.create(
+    
+    
+    
+    billing_details = {
+        'address': {
+            "line1":"8634 Summit St. Murfreesboro, TN 37128",
+            "city":"New York",
+            "country": "US",
+            'postal_code':'37128',
+        },
+        'name': "Jon Snow",
+        'email':"ahmad@spiderorb.com",
+        
+    }
+    
+    payment_method = stripe.PaymentMethod.create(
       type="card",
       card={
         "number": dummy_card,
@@ -58,10 +73,11 @@ def index(request):
         "exp_year": 2020,
         "cvc": "314",
       },
+      billing_details=billing_details,
     )
     
     print("PAYMENT METHOD (CARD) CREATED...") 
-    print(payment_method_response)
+    print(payment_method)
      
     address = {
         "line1": "TDI, Chandigarh",
@@ -74,7 +90,7 @@ def index(request):
       email="jonsnow@crows.com",
       name="Jon Snow",
       address=address,
-      payment_method=payment_method_response.id,
+      payment_method=payment_method.id,
     )
     
     print("CUSTOMER CREATED...") 
@@ -113,12 +129,15 @@ def index(request):
     # subscribe to outpost basic plan (recurring)
     subscription = stripe.Subscription.create(
       customer=customer.id,
-      default_payment_method=payment_method_response.id, 
-      items=[{"plan": plan_one_id}],
+      default_payment_method=payment_method.id, 
+      items=[{"plan": "basic"}],
     )
     
     print("SUBSCRIPTION CREATED...")  
     print(subscription)
+    
+    # TODO:
+    # Complete the transaction using invoice 
     
             
     return HttpResponse("Stripe payment subscription...")
